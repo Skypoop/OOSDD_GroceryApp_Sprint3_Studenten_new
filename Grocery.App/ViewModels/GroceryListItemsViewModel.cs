@@ -16,6 +16,8 @@ namespace Grocery.App.ViewModels
         private readonly IProductService _productService;
         private readonly IFileSaverService _fileSaverService;
         
+        //partial void OnGroceryListChanged(GroceryList value);
+        
         public ObservableCollection<GroceryListItem> MyGroceryListItems { get; set; } = [];
         public ObservableCollection<Product> AvailableProducts { get; set; } = [];
 
@@ -23,6 +25,8 @@ namespace Grocery.App.ViewModels
         GroceryList groceryList = new(0, "None", DateOnly.MinValue, "", 0);
         [ObservableProperty]
         string myMessage;
+        [ObservableProperty]
+        string searchTerm;
 
         public GroceryListItemsViewModel(IGroceryListItemsService groceryListItemsService, IProductService productService, IFileSaverService fileSaverService)
         {
@@ -39,19 +43,30 @@ namespace Grocery.App.ViewModels
             GetAvailableProducts();
         }
 
-        private void GetAvailableProducts()
+        private void GetAvailableProducts(string? query = null)
         {
             AvailableProducts.Clear();
-            foreach (Product p in _productService.GetAll())
-                if (MyGroceryListItems.FirstOrDefault(g => g.ProductId == p.Id) == null  && p.Stock > 0)
-                    AvailableProducts.Add(p);
+            var allProducts = _productService.GetAll();
+
+            var filteredProducts = allProducts.Where(p => 
+                MyGroceryListItems.FirstOrDefault(g => g.ProductId == p.Id) == null && p.Stock > 0);
+
+            if (!string.IsNullOrWhiteSpace(query))
+            {
+                filteredProducts = filteredProducts.Where(p => p.Name.Contains(query, StringComparison.OrdinalIgnoreCase));
+            }
+
+            foreach (Product p in filteredProducts)
+            {
+                AvailableProducts.Add(p);
+            }
         }
 
-        partial void OnGroceryListChanged(GroceryList value)
-        {
-            Load(value.Id);
-        }
-
+        // partial void OnGroceryListChanged(GroceryList value)
+        // {
+        //     Load(value.Id);
+        // }
+        //
         [RelayCommand]
         public async Task ChangeColor()
         {
@@ -67,6 +82,24 @@ namespace Grocery.App.ViewModels
             product.Stock--;
             _productService.Update(product);
             AvailableProducts.Remove(product);
+            Load(GroceryList.Id);
+            OnGroceryListChanged(GroceryList);
+        }
+
+        [RelayCommand]
+        public void DeleteProduct(GroceryListItem? groceryListItem)
+        {
+            if (groceryListItem == null) return;
+            Product? product = _productService.Get(groceryListItem.ProductId);
+            if (product != null)
+            {
+                product.Stock+= groceryListItem.Amount;
+                _productService.Update(product);
+                AvailableProducts.Add(product);
+            }
+            _groceryListItemsService.Delete(groceryListItem);
+            MyGroceryListItems.Remove(groceryListItem);
+            Load(GroceryList.Id);
             OnGroceryListChanged(GroceryList);
         }
 
@@ -86,5 +119,10 @@ namespace Grocery.App.ViewModels
             }
         }
 
+        [RelayCommand]
+        private void SearchProduct(string query)
+        {
+            GetAvailableProducts(query);
+        }
     }
 }

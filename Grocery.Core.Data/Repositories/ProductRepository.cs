@@ -12,7 +12,14 @@ namespace Grocery.Core.Data.Repositories
                 new Product(1, "Melk", 300),
                 new Product(2, "Kaas", 100),
                 new Product(3, "Brood", 400),
-                new Product(4, "Cornflakes", 0)];
+                new Product(4, "Cornflakes", 0),
+                new Product(5, "Boter", 200),
+                new Product(6, "Eieren", 150),
+                new Product(7, "Appels", 250),
+                new Product(8, "Bananen", 180),
+                new Product(9, "Tomaten", 120),
+                new Product(10, "Aardappelen", 500),
+            ];
         }
         public List<Product> GetAll()
         {
@@ -26,12 +33,14 @@ namespace Grocery.Core.Data.Repositories
 
         public Product Add(Product item)
         {
-            throw new NotImplementedException();
+            products.Add(item);
+            return item;
         }
 
         public Product? Delete(Product item)
         {
-            throw new NotImplementedException();
+            products.Remove(item);
+            return item;
         }
 
         public Product? Update(Product item)

@@ -36,11 +36,11 @@ jobs:
         run: dotnet restore
 
       - name: Bouw de applicatie
-        run: dotnet build --configuration Release --no-restore --framework net8.0-maccatalyst
+        run: dotnet build Grocery.App/Grocery.App.csproj --configuration Release --no-restore --framework net8.0-maccatalyst /p:ApplicationId=nl.windesheim.groceryapp
 
       - name: Voer unit tests uit en genereer rapport
-        run: dotnet test --configuration Release --no-restore --no-build --verbosity normal --framework net8.0-maccatalyst --results-directory "TestResults" --logger "trx;LogFileName=testresults.trx"
-        
+        run: dotnet test --configuration Release --verbosity normal --results-directory "TestResults" --logger "trx;LogFileName=testresults.trx"
+
       - name: Upload test resultaten
         uses: actions/upload-artifact@v4
         with:
