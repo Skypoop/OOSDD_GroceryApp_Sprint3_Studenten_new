@@ -10,6 +10,8 @@ namespace Grocery.App.ViewModels
     public partial class ChangeColorViewModel : BaseViewModel
     {
         private readonly IGroceryListService _groceryListService;
+        //partial void OnGroceryListChanged(GroceryList value);
+
 
         [ObservableProperty]
         GroceryList groceryList = new(0, "", DateOnly.MinValue, "", 0);
@@ -20,15 +22,16 @@ namespace Grocery.App.ViewModels
             _groceryListService = groceryListService;
         }
 
-        partial void OnGroceryListChanged(GroceryList value)
-        {
-            GroceryList = _groceryListService.Update(value);
-        }
+        // partial void OnGroceryListChanged(GroceryList value)
+        // {
+        //     GroceryList = _groceryListService.Update(value);
+        // }
 
         [RelayCommand]
         private async Task ChangeColor(string color)
         {
             GroceryList.Color = color;
+            GroceryList = _groceryListService.Update(GroceryList);
             OnGroceryListChanged(GroceryList);
             await Shell.Current.GoToAsync("..");
         }

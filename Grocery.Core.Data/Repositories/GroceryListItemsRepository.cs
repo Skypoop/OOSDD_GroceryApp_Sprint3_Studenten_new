@@ -9,7 +9,8 @@ namespace Grocery.Core.Data.Repositories
 
         public GroceryListItemsRepository()
         {
-            groceryListItems = [
+            groceryListItems =
+            [
                 new GroceryListItem(1, 1, 1, 3),
                 new GroceryListItem(2, 1, 2, 1),
                 new GroceryListItem(3, 1, 3, 4),
@@ -38,7 +39,14 @@ namespace Grocery.Core.Data.Repositories
 
         public GroceryListItem? Delete(GroceryListItem item)
         {
-            throw new NotImplementedException();
+            var existingItem = groceryListItems.FirstOrDefault(g => g.Id == item.Id);
+            if (existingItem != null)
+            {
+                groceryListItems.Remove(existingItem);
+                return existingItem;
+            }
+
+            return null;
         }
 
         public GroceryListItem? Get(int id)
@@ -48,7 +56,17 @@ namespace Grocery.Core.Data.Repositories
 
         public GroceryListItem? Update(GroceryListItem item)
         {
-            throw new NotImplementedException();
+            var existingItem = groceryListItems.FirstOrDefault(g => g.Id == item.Id);
+            if (existingItem != null)
+            {
+                existingItem.GroceryListId = item.GroceryListId;
+                existingItem.ProductId = item.ProductId;
+                existingItem.Amount = item.Amount;
+                return existingItem;
+            }
+
+            return null;
+
         }
     }
 }
