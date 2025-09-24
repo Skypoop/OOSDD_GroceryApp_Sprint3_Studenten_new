@@ -36,7 +36,7 @@ jobs:
         run: dotnet restore
 
       - name: Bouw de applicatie
-        run: dotnet build OOSDD_GroceryApp_Sprint3_Studenten_new/Grocery.App/Grocery.App.csproj --configuration Release --no-restore --framework net8.0-maccatalyst /p:ApplicationId=nl.windesheim.groceryapp
+        run: dotnet build Grocery.App/Grocery.App.csproj --configuration Release --no-restore --framework net8.0-maccatalyst /p:ApplicationId=nl.windesheim.groceryapp
 
       - name: Voer unit tests uit en genereer rapport
         run: dotnet test --no-build --configuration Release --verbosity normal --results-directory "TestResults" --logger "trx;LogFileName=testresults.trx"
