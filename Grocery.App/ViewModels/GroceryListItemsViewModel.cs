@@ -15,9 +15,7 @@ namespace Grocery.App.ViewModels
         private readonly IGroceryListItemsService _groceryListItemsService;
         private readonly IProductService _productService;
         private readonly IFileSaverService _fileSaverService;
-        
-        //partial void OnGroceryListChanged(GroceryList value);
-        
+
         public ObservableCollection<GroceryListItem> MyGroceryListItems { get; set; } = [];
         public ObservableCollection<Product> AvailableProducts { get; set; } = [];
 
@@ -40,33 +38,19 @@ namespace Grocery.App.ViewModels
         {
             MyGroceryListItems.Clear();
             foreach (var item in _groceryListItemsService.GetAllOnGroceryListId(id)) MyGroceryListItems.Add(item);
-            GetAvailableProducts();
+            RefreshAvailableProducts();
         }
 
-        private void GetAvailableProducts(string? query = null)
+        private void RefreshAvailableProducts(string? query = null)
         {
             AvailableProducts.Clear();
-            var allProducts = _productService.GetAll();
-
-            var filteredProducts = allProducts.Where(p => 
-                MyGroceryListItems.FirstOrDefault(g => g.ProductId == p.Id) == null && p.Stock > 0);
-
-            if (!string.IsNullOrWhiteSpace(query))
-            {
-                filteredProducts = filteredProducts.Where(p => p.Name.Contains(query, StringComparison.OrdinalIgnoreCase));
-            }
-
-            foreach (Product p in filteredProducts)
+            var products = _groceryListItemsService.GetAvailableProducts(GroceryList.Id, query);
+            foreach (Product p in products)
             {
                 AvailableProducts.Add(p);
             }
         }
 
-        // partial void OnGroceryListChanged(GroceryList value)
-        // {
-        //     Load(value.Id);
-        // }
-        //
         [RelayCommand]
         public async Task ChangeColor()
         {
@@ -81,9 +65,7 @@ namespace Grocery.App.ViewModels
             _groceryListItemsService.Add(item);
             product.Stock--;
             _productService.Update(product);
-            AvailableProducts.Remove(product);
             Load(GroceryList.Id);
-            OnGroceryListChanged(GroceryList);
         }
 
         [RelayCommand]
@@ -100,7 +82,6 @@ namespace Grocery.App.ViewModels
             _groceryListItemsService.Delete(groceryListItem);
             MyGroceryListItems.Remove(groceryListItem);
             Load(GroceryList.Id);
-            OnGroceryListChanged(GroceryList);
         }
 
         [RelayCommand]
@@ -122,7 +103,7 @@ namespace Grocery.App.ViewModels
         [RelayCommand]
         private void SearchProduct(string query)
         {
-            GetAvailableProducts(query);
+            RefreshAvailableProducts(query);
         }
     }
 }

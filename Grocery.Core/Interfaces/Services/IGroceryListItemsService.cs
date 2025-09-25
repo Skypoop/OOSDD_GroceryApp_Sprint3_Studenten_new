@@ -8,6 +8,7 @@ namespace Grocery.Core.Interfaces.Services
         public List<GroceryListItem> GetAll();
 
         public List<GroceryListItem> GetAllOnGroceryListId(int groceryListId);
+        List<Product> GetAvailableProducts(int groceryListId, string? query = null);
 
         public GroceryListItem Add(GroceryListItem item);
 
@@ -16,5 +17,7 @@ namespace Grocery.Core.Interfaces.Services
         public GroceryListItem? Get(int id);
 
         public GroceryListItem? Update(GroceryListItem item);
+        
+        // public GroceryListItem? GetAvailableProducts(string? query = null);
     }
 }
