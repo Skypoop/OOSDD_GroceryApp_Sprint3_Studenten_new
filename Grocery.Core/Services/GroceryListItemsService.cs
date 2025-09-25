@@ -8,25 +8,43 @@ namespace Grocery.Core.Services
     {
         private readonly IGroceryListItemsRepository _groceriesRepository;
         private readonly IProductRepository _productRepository;
+        private readonly IProductService _productService;
 
-        public GroceryListItemsService(IGroceryListItemsRepository groceriesRepository, IProductRepository productRepository)
+        public GroceryListItemsService(IGroceryListItemsRepository groceriesRepository, IProductRepository productRepository, IProductService productService)
         {
             _groceriesRepository = groceriesRepository;
             _productRepository = productRepository;
+            _productService = productService;
         }
 
         public List<GroceryListItem> GetAll()
         {
             List<GroceryListItem> groceryListItems = _groceriesRepository.GetAll();
-            FillService(groceryListItems);
+            FillProducts(groceryListItems);
             return groceryListItems;
         }
 
         public List<GroceryListItem> GetAllOnGroceryListId(int groceryListId)
         {
             List<GroceryListItem> groceryListItems = _groceriesRepository.GetAll().Where(g => g.GroceryListId == groceryListId).ToList();
-            FillService(groceryListItems);
+            FillProducts(groceryListItems);
             return groceryListItems;
+        }
+
+        public List<Product> GetAvailableProducts(int groceryListId, string? query = null)
+        {
+            var allProducts = _productService.GetAll();
+            var currentItemIds = GetAllOnGroceryListId(groceryListId).Select(i => i.ProductId);
+
+            var filteredProducts = allProducts.Where(p =>
+                !currentItemIds.Contains(p.Id) && p.Stock > 0);
+
+            if (!string.IsNullOrWhiteSpace(query))
+            {
+                filteredProducts = filteredProducts.Where(p => p.Name.Contains(query, StringComparison.OrdinalIgnoreCase));
+            }
+
+            return filteredProducts.ToList();
         }
 
         public GroceryListItem Add(GroceryListItem item)
@@ -41,7 +59,12 @@ namespace Grocery.Core.Services
 
         public GroceryListItem? Get(int id)
         {
-            throw new NotImplementedException();
+            var item = _groceriesRepository.Get(id);
+            if (item != null)
+            {
+                FillProducts(new List<GroceryListItem> { item });
+            }
+            return item;
         }
 
         public GroceryListItem? Update(GroceryListItem item)
@@ -49,11 +72,11 @@ namespace Grocery.Core.Services
             return _groceriesRepository.Update(item);
         }
 
-        private void FillService(List<GroceryListItem> groceryListItems)
+        private void FillProducts(List<GroceryListItem> groceryListItems)
         {
             foreach (GroceryListItem g in groceryListItems)
             {
-                g.Product = _productRepository.Get(g.ProductId) ?? new(0, "", 0);
+                g.Product = _productRepository.Get(g.ProductId) ?? new(0, "Not Found", 0);
             }
         }
     }
